@@ -1,0 +1,83 @@
+[root]
+name = "miotest"
+version = "0.1.0"
+dependencies = [
+ "env_logger 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "mio 0.4.0 (git+https://github.com/carllerche/mio.git)",
+]
+
+[[package]]
+name = "bitflags"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "bytes"
+version = "0.2.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "clock_ticks"
+version = "0.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "libc 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "env_logger"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "log 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "regex 0.1.30 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "libc"
+version = "0.1.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "log"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "libc 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "mio"
+version = "0.4.0"
+source = "git+https://github.com/carllerche/mio.git#f48c4aec45fb50f0120877d51bba8ef00bfe4107"
+dependencies = [
+ "bytes 0.2.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "clock_ticks 0.0.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "nix 0.3.5 (git+https://github.com/carllerche/nix-rust)",
+ "winapi 0.1.17 (git+https://github.com/retep998/winapi-rs)",
+]
+
+[[package]]
+name = "nix"
+version = "0.3.5"
+source = "git+https://github.com/carllerche/nix-rust#c4a9598ec16a01e11e66bea1eb34cea9b4646326"
+dependencies = [
+ "bitflags 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "libc 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "regex"
+version = "0.1.30"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "winapi"
+version = "0.1.17"
+source = "git+https://github.com/retep998/winapi-rs#ae64f65cd98455ed4048031b42c7ae0c76871aa7"
+dependencies = [
+ "libc 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+

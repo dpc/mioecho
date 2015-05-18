@@ -1,0 +1,11 @@
+[package]
+name = "mioecho"
+version = "0.1.0"
+authors = ["Dawid Ciężarkiewicz <dpc@dpc.pw>"]
+
+[dependencies]
+log = "*"
+env_logger = "*"
+
+[dependencies.mio]
+git = "https://github.com/carllerche/mio.git"
