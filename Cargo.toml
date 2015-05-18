@@ -1,0 +1,11 @@
+[package]
+name = "miotest"
+version = "0.1.0"
+authors = ["Dawid Ciężarkiewicz <dawidc@nvidia.com>"]
+
+[dependencies]
+log = "*"
+env_logger = "*"
+
+[dependencies.mio]
+git = "https://github.com/carllerche/mio.git"
