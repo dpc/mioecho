@@ -17,7 +17,7 @@ use std::net::SocketAddr;
 use std::str::FromStr;
 
 pub fn localhost() -> SocketAddr {
-    let s = "127.0.0.1:18080";
+    let s = "127.0.0.1:5555";
     FromStr::from_str(&s).unwrap()
 }
 
@@ -67,11 +67,16 @@ impl EchoConn {
             interest.insert(Interest::readable());
         }
 
-        if self.peer_hup && self.buf.bytes().len() == 0 {
+        if self.peer_hup {
+        //if self.peer_hup && self.buf.bytes().len() == 0 {
             event_loop.deregister(&self.sock).unwrap();
             debug!("{} deregister", self);
             ConnResult::Disconnect
         } else {
+            if self.peer_hup {
+                info!("{} Pending HUP", self);
+            }
+
             ConnResult::Io(event_loop.reregister(
                 &self.sock, self.token.unwrap(),
                 interest, PollOpt::edge() | PollOpt::oneshot()
@@ -250,7 +255,7 @@ pub fn main() {
 
     let srv = srv.listen(256).unwrap();
 
-    info!("listen for connections on {:?}", addr);
+    info!("listen for connections on {:?}", srv.local_addr().unwrap());
     event_loop.register_opt(&srv, SERVER, Interest::readable(), PollOpt::edge()).unwrap();
 
     // Start the event loop
