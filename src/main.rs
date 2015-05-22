@@ -39,15 +39,20 @@ struct EchoConn {
     buf: RingBuf,
     token: Option<Token>,
     peer_hup: bool,
+    interest: Interest,
 }
 
 impl EchoConn {
     fn new(sock: TcpStream) -> EchoConn {
+        let mut interest = Interest::hup();
+        interest.insert(Interest::readable());
+
         EchoConn {
             sock: sock,
             buf: RingBuf::new(1024),
             token: None,
             peer_hup: false,
+            interest: interest,
         }
     }
 
@@ -55,40 +60,38 @@ impl EchoConn {
                   event_loop: &mut EventLoop<Echo>,
                  ) -> ConnResult {
 
-        let mut interest = Interest::hup();
-
         // have somewhere to write
         if self.buf.bytes().len() > 0 {
-            interest.insert(Interest::writable());
+            self.interest.insert(Interest::writable());
+        } else {
+            self.interest.remove(Interest::writable());
         }
 
         // have somewhere to read to
         if !self.peer_hup && self.buf.mut_bytes().len() > 0 {
-            interest.insert(Interest::readable());
-        }
-
-        if self.peer_hup {
-        //if self.peer_hup && self.buf.bytes().len() == 0 {
-            event_loop.deregister(&self.sock).unwrap();
-            debug!("{} deregister", self);
-            ConnResult::Disconnect
+            self.interest.insert(Interest::readable());
         } else {
-            if self.peer_hup {
-                info!("{} Pending HUP", self);
-            }
-
-            ConnResult::Io(event_loop.reregister(
-                &self.sock, self.token.unwrap(),
-                interest, PollOpt::edge() | PollOpt::oneshot()
-                ))
+            self.interest.remove(Interest::readable());
         }
+
+        debug!("{} reregister", self);
+        ConnResult::Io(event_loop.reregister(
+                &self.sock, self.token.unwrap(),
+                self.interest, PollOpt::edge() | PollOpt::oneshot()
+                ))
     }
 
     fn hup(&mut self,
            event_loop: &mut EventLoop<Echo>,
           ) -> ConnResult {
-        self.peer_hup = true;
-        self.reregister(event_loop)
+        debug!("{} hup", self);
+        if self.interest == Interest::hup() {
+            event_loop.deregister(&self.sock).unwrap();
+            ConnResult::Disconnect
+        } else {
+            self.peer_hup = true;
+            self.reregister(event_loop)
+        }
     }
 
     fn writable(&mut self,
@@ -112,10 +115,6 @@ impl EchoConn {
     fn readable(&mut self,
                 event_loop: &mut EventLoop<Echo>,
                 ) -> ConnResult {
-
-/*        if self.peer_hup {
-            info!("PROBLEM: peer_hup already set");
-        }*/
 
         match self.sock.read_slice(&mut self.buf.mut_bytes()) {
             Ok(None) => {
@@ -153,17 +152,23 @@ struct EchoServer {
 impl EchoServer {
     fn accept(&mut self, event_loop: &mut EventLoop<Echo>) -> io::Result<()> {
 
-        let sock = self.sock.accept().unwrap().unwrap();
-        let conn = EchoConn::new(sock);
-        let tok = self.conns.insert(conn)
-            .ok().expect("could not add connection to slab");
-        debug!("{:?} - new token", tok);
+        loop {
+            let sock = match self.sock.accept().unwrap() {
+                None => break,
+                Some(sock) => sock,
+            };
 
-        self.conns[tok].token = Some(tok);
+            let conn = EchoConn::new(sock);
+            let tok = self.conns.insert(conn)
+                .ok().expect("could not add connection to slab");
+            debug!("{:?} - new token", tok);
 
-        debug!("{}: new connection", self.conns[tok]);
-        event_loop.register_opt(&self.conns[tok].sock, tok, Interest::readable() , PollOpt::edge() | PollOpt::oneshot())
-            .ok().expect("could not register socket with event loop");
+            self.conns[tok].token = Some(tok);
+
+            debug!("{}: new connection", self.conns[tok]);
+            event_loop.register_opt(&self.conns[tok].sock, tok, Interest::readable() , PollOpt::edge() | PollOpt::oneshot())
+                .ok().expect("could not register socket with event loop");
+        }
 
         Ok(())
     }
