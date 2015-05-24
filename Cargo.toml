@@ -6,6 +6,7 @@ authors = ["Dawid Ciężarkiewicz <dpc@dpc.pw>"]
 [dependencies]
 log = "*"
 env_logger = "*"
+nix = "*"
 
 [dependencies.mio]
 git = "https://github.com/carllerche/mio.git"

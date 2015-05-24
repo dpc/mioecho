@@ -1,4 +1,5 @@
 extern crate mio;
+extern crate nix;
 #[macro_use]
 extern crate log;
 extern crate env_logger;
@@ -175,8 +176,15 @@ impl Server {
         try!(sock.bind(&addr));
 
         let sock = try!(sock.listen(1024));
-
-        let mut ev_loop : EventLoop<Server> = try!(EventLoop::new());
+        let config = EventLoopConfig {
+            io_poll_timeout_ms: 1,
+            notify_capacity: 4_096,
+            messages_per_tick: 256,
+            timer_tick_ms: 1,
+            timer_wheel_size: 1_024,
+            timer_capacity: 65_536,
+        };
+        let mut ev_loop : EventLoop<Server> = try!(EventLoop::configured(config));
 
         try!(ev_loop.register_opt(&sock, SERVER, Interest::readable(), PollOpt::edge()));
 
@@ -188,13 +196,21 @@ impl Server {
 
     fn accept(&mut self, event_loop: &mut EventLoop<Server>) -> io::Result<()> {
 
+        use std::os::unix::io::AsRawFd;
+        use nix::sys::socket;
         loop {
             let sock = match try!(self.sock.accept()) {
                 None => break,
                 Some(sock) => sock,
             };
 
+            // Don't buffer output in TCP - kills latency sensitive benchmarks
+            try!(socket::setsockopt(
+                    sock.as_raw_fd(), socket::SockLevel::Tcp, socket::sockopt::TcpNoDelay, &true
+                    ).map_err(|e| io::Error::from_raw_os_error(e.errno() as i32)));
+
             let conn = Connection::new(sock);
+
             let tok = self.conns.insert(conn);
 
             let tok = match tok {

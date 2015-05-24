@@ -46,11 +46,11 @@ Using: https://github.com/dpc/benchmark-echo
 
 ```
 rust ./mioecho:5555
-Throughput: 206731.02 [reqests/sec], errors: 0
-Throughput: 191145.35 [reqests/sec], errors: 0
-Throughput: 154950.69 [reqests/sec], errors: 0
-Throughput: 156119.67 [reqests/sec], errors: 0
-Throughput: 176071.46 [reqests/sec], errors: 0
+Throughput: 148697.85 [reqests/sec], errors: 0
+Throughput: 145282.09 [reqests/sec], errors: 0
+Throughput: 157900.81 [reqests/sec], errors: 0
+Throughput: 155722.21 [reqests/sec], errors: 0
+Throughput: 160203.92 [reqests/sec], errors: 0
 
 c ./server_libev 3100
 Throughput: 192770.52 [reqests/sec], errors: 0
