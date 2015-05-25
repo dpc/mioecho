@@ -6,11 +6,10 @@
 
 `mioecho` is a simple TCP echo server based on [mio][mio] [rust language][rust] library.
 
-The idea is to write a basic, but polished example for evaluation and reference.
+The idea is to write a basic, but polished and well performing example for evaluation and reference.
 
 [rust]: http://rust-lang.org
 [mio]: https://github.com/carllerche/mio
-[hex2d-dpcext-rs]: http://github.com/dpc/hex2d-dpcext-rs
 
 ## Building & running
 
@@ -18,7 +17,7 @@ The idea is to write a basic, but polished example for evaluation and reference.
 
 # Semi-benchmarks
 
-Be aware: This is amateurish and probably misleading comparison!
+Beware: This is amateurish and probably misleading comparison!
 
 Using: https://gist.github.com/dpc/8cacd3b6fa5273ffdcce
 

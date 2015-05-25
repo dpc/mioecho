@@ -1,9 +1,5 @@
 extern crate mio;
 extern crate nix;
-#[macro_use]
-extern crate log;
-extern crate env_logger;
-
 
 use mio::*;
 use mio::tcp::*;
@@ -299,13 +295,11 @@ impl Handler for Server {
 }
 
 pub fn main() {
-    env_logger::init().unwrap();
-
     let addr = listend_addr();
 
     let (mut server, mut ev_loop) = Server::new(addr).unwrap();
 
     // Start the event loop
-    info!("Starting mioecho server on {:?}", server.sock.local_addr().unwrap());
+    println!("Starting mioecho server on {:?}", server.sock.local_addr().unwrap());
     ev_loop.run(&mut server).unwrap();
 }
