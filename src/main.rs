@@ -78,7 +78,7 @@ impl Connection {
             let (len, res) = {
                 let buf = &self.buf.bytes();
                 let len = buf.len();
-                let res = self.sock.write_slice(buf);
+                let res = self.sock.try_write(buf);
                 (len, res)
             };
             match res {
@@ -109,7 +109,7 @@ impl Connection {
             let (len, res) = {
                 let mut buf = &mut self.buf.mut_bytes();
                 let len = buf.len();
-                let res = self.sock.read_slice(buf);
+                let res = self.sock.try_read(buf);
                 (len, res)
             };
             match res {
