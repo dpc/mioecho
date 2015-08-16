@@ -1,0 +1,123 @@
+[root]
+name = "mioecho"
+version = "0.1.0"
+dependencies = [
+ "bytes 0.2.11 (registry+https://github.com/rust-lang/crates.io-index)",
+ "env_logger 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "mio 0.5.0-pre (git+https://github.com/carllerche/mio.git)",
+ "nix 0.3.9 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "aho-corasick"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "memchr 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "bitflags"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "bytes"
+version = "0.2.10"
+source = "git+https://github.com/carllerche/bytes?rev=7edb577d0a#7edb577d0ae7302606636cb0154e0d067ad7affd"
+
+[[package]]
+name = "bytes"
+version = "0.2.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "clock_ticks"
+version = "0.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "libc 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "env_logger"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "log 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "regex 0.1.41 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "libc"
+version = "0.1.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "log"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "libc 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "memchr"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "libc 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "mio"
+version = "0.5.0-pre"
+source = "git+https://github.com/carllerche/mio.git#fcec179737411ac105f8b27d38cb7ceee8c5c5d7"
+dependencies = [
+ "bytes 0.2.10 (git+https://github.com/carllerche/bytes?rev=7edb577d0a)",
+ "clock_ticks 0.0.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "libc 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "nix 0.3.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "slab 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "winapi 0.1.23 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "nix"
+version = "0.3.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "bitflags 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "libc 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "regex"
+version = "0.1.41"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "aho-corasick 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "memchr 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "regex-syntax 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "regex-syntax"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "slab"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "winapi"
+version = "0.1.23"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "libc 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
