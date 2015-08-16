@@ -1,9 +1,10 @@
 extern crate mio;
 extern crate nix;
+extern crate bytes;
 
 use mio::*;
 use mio::tcp::*;
-use mio::buf::{RingBuf};
+use bytes::{RingBuf, Buf, MutBuf};
 use mio::util::Slab;
 use std::io;
 use std::fmt;
@@ -29,7 +30,7 @@ struct Connection {
     buf: RingBuf,
     token: Option<Token>,
     peer_hup: bool,
-    interest: Interest,
+    interest: EventSet,
 }
 
 impl Connection {
@@ -39,12 +40,12 @@ impl Connection {
             buf: RingBuf::new(CONN_BUFF_SIZE),
             token: None,
             peer_hup: false,
-            interest: Interest::hup() | Interest::readable(),
+            interest: EventSet::hup() | EventSet::readable(),
         }
     }
 
     fn is_finished(&self) -> bool {
-        self.interest == Interest::none()
+        self.interest == EventSet::none()
     }
 
     fn reregister(&mut self,
@@ -53,16 +54,16 @@ impl Connection {
 
         // have somewhere to write
         if Buf::remaining(&self.buf) > 0 {
-            self.interest.insert(Interest::writable());
+            self.interest.insert(EventSet::writable());
         } else {
-            self.interest.remove(Interest::writable());
+            self.interest.remove(EventSet::writable());
         }
 
         // have somewhere to read to and someone to receive from
         if !self.peer_hup && MutBuf::remaining(&self.buf) > 0 {
-            self.interest.insert(Interest::readable());
+            self.interest.insert(EventSet::readable());
         } else {
-            self.interest.remove(Interest::readable());
+            self.interest.remove(EventSet::readable());
         }
 
         event_loop.reregister(
@@ -134,8 +135,8 @@ impl Connection {
     fn hup(&mut self,
            event_loop: &mut EventLoop<Server>,
           ) -> io::Result<()> {
-        if self.interest == Interest::hup() {
-            self.interest = Interest::none();
+        if self.interest == EventSet::hup() {
+            self.interest = EventSet::none();
             try!(event_loop.deregister(&self.sock));
             Ok(())
         } else {
@@ -182,7 +183,7 @@ impl Server {
         };
         let mut ev_loop : EventLoop<Server> = try!(EventLoop::configured(config));
 
-        try!(ev_loop.register_opt(&sock, SERVER, Interest::readable(), PollOpt::edge()));
+        try!(ev_loop.register_opt(&sock, SERVER, EventSet::readable(), PollOpt::edge()));
 
         Ok((Server {
             sock: sock,
@@ -192,8 +193,6 @@ impl Server {
 
     fn accept(&mut self, event_loop: &mut EventLoop<Server>) -> io::Result<()> {
 
-        use std::os::unix::io::AsRawFd;
-        use nix::sys::socket;
         loop {
             let sock = match try!(self.sock.accept()) {
                 None => break,
@@ -201,9 +200,7 @@ impl Server {
             };
 
             // Don't buffer output in TCP - kills latency sensitive benchmarks
-            try!(socket::setsockopt(
-                    sock.as_raw_fd(), socket::SockLevel::Tcp, socket::sockopt::TcpNoDelay, &true
-                    ).map_err(|e| io::Error::from_raw_os_error(e.errno() as i32)));
+            let _ = sock.set_nodelay(true);
 
             let conn = Connection::new(sock);
 
@@ -217,7 +214,7 @@ impl Server {
             self.conns[tok].token = Some(tok);
 
             try!(event_loop.register_opt(
-                    &self.conns[tok].sock, tok, Interest::readable() , PollOpt::edge() | PollOpt::oneshot())
+                    &self.conns[tok].sock, tok, EventSet::readable() , PollOpt::edge() | PollOpt::oneshot())
                 );
         }
 
@@ -269,27 +266,24 @@ impl Handler for Server {
     type Timeout = usize;
     type Message = ();
 
-    fn readable(&mut self, event_loop: &mut EventLoop<Server>, token: Token, hint: ReadHint) {
+    fn ready(&mut self, event_loop: &mut EventLoop<Server>, token: Token, events: EventSet) {
 
         let res = match token {
             SERVER => self.accept(event_loop),
             i => {
-                if hint.is_hup() {
-                    self.conn_hup(event_loop, i)
-                } else {
-                    self.conn_readable(event_loop, i)
+                if events.is_hup() {
+                    let _ = self.conn_hup(event_loop, i);
                 }
+                if events.is_readable() {
+                    let _ = self.conn_readable(event_loop, i);
+                }
+                if events.is_writable() {
+                    let _ = self.conn_writable(event_loop, i);
+                }
+
+                Ok(())
             }
         };
-        res.unwrap();
-    }
-
-    fn writable(&mut self, event_loop: &mut EventLoop<Server>, token: Token) {
-        let res = match token {
-            SERVER => panic!("received writable for token 0"),
-            _ => self.conn_writable(event_loop, token)
-        };
-
         res.unwrap();
     }
 }
