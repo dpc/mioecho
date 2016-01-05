@@ -8,6 +8,4 @@ log = "*"
 env_logger = "*"
 nix = "*"
 bytes = "*"
-
-[dependencies.mio]
-git = "https://github.com/carllerche/mio.git"
+mio = "*"

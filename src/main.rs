@@ -108,7 +108,7 @@ impl Connection {
                 ) -> io::Result<()> {
         loop {
             let (len, res) = {
-                let mut buf = &mut self.buf.mut_bytes();
+                let mut buf = unsafe { &mut self.buf.mut_bytes() };
                 let len = buf.len();
                 let res = self.sock.try_read(buf);
                 (len, res)
@@ -118,7 +118,7 @@ impl Connection {
                     break;
                 },
                 Ok(Some(r)) => {
-                    MutBuf::advance(&mut self.buf, r);
+                    unsafe { MutBuf::advance(&mut self.buf, r) };
                     if r != len || MutBuf::remaining(&self.buf) == 0 {
                         break;
                     }
@@ -167,23 +167,12 @@ impl Server {
 
     fn new(addr : SocketAddr) -> io::Result<(Server, EventLoop<Server>)> {
 
-        let sock = try!(TcpSocket::v4());
+        let sock = try!(TcpListener::bind(&addr));
 
-        try!(sock.set_reuseaddr(true));
-        try!(sock.bind(&addr));
-
-        let sock = try!(sock.listen(1024));
-        let config = EventLoopConfig {
-            io_poll_timeout_ms: 1,
-            notify_capacity: 4_096,
-            messages_per_tick: 256,
-            timer_tick_ms: 1,
-            timer_wheel_size: 1_024,
-            timer_capacity: 65_536,
-        };
+        let config = EventLoopConfig::new();
         let mut ev_loop : EventLoop<Server> = try!(EventLoop::configured(config));
 
-        try!(ev_loop.register_opt(&sock, SERVER, EventSet::readable(), PollOpt::edge()));
+        try!(ev_loop.register(&sock, SERVER, EventSet::readable(), PollOpt::edge()));
 
         Ok((Server {
             sock: sock,
@@ -194,7 +183,7 @@ impl Server {
     fn accept(&mut self, event_loop: &mut EventLoop<Server>) -> io::Result<()> {
 
         loop {
-            let sock = match try!(self.sock.accept()) {
+            let (sock, _addr) = match try!(self.sock.accept()) {
                 None => break,
                 Some(sock) => sock,
             };
@@ -213,7 +202,7 @@ impl Server {
 
             self.conns[tok].token = Some(tok);
 
-            try!(event_loop.register_opt(
+            try!(event_loop.register(
                     &self.conns[tok].sock, tok, EventSet::readable() , PollOpt::edge() | PollOpt::oneshot())
                 );
         }
